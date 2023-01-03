@@ -1,0 +1,38 @@
+let
+	url = "https://api.dominio.com/graphql",
+	apitoken ="your_token",
+    	api_query="{""query"":"" query {
+    
+    YourQuery(id: 999999999) {
+
+    edges {
+      node {
+        id    
+      }
+
+      }
+   }
+    
+      }""}",
+
+      query_singleline=Text.Clean(api_query),
+
+      Source = Json.Document(Web.Contents(
+      url,
+      [
+             Headers=[
+                 #"Accept"="application/json",
+                 #"Method"="GET", 
+                 #"Authorization"="Bearer " & apitoken,
+                 #"Content-Type"="application/json"
+               
+                 ], 
+                 
+                 Content=Text.ToBinary(query_singleline)
+                 
+                 ]
+    )),
+
+    data = Source[data]
+in
+    data

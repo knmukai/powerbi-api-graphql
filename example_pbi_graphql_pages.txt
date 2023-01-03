@@ -1,0 +1,60 @@
+let
+  GetPage = (cursor) =>
+  let
+	  url = "https://api.dominio.com/graphql",
+	  apitoken ="your_token",
+    api_query="{""query"":"" query($cursor: String) {
+    
+    YourQuery(id: 99999999, first: 50, after:$cursor) {
+     pageInfo {
+      endCursor
+      hasNextPage
+    }
+    edges {
+      cursor
+      node {
+        id      
+      }
+
+      }
+   }
+
+    
+      }""}",
+
+      query_singleline=Text.Clean(api_query),
+
+      Source = Json.Document(Web.Contents(
+      url,
+      [
+             Headers=[
+                 #"Accept"="application/json",
+                 #"Method"="GET", 
+                 #"Authorization"="Bearer " & apitoken,
+                 #"Content-Type"="application/json"
+               
+                 ], 
+                 
+                 Content=Text.ToBinary(Text.Replace(query_singleline,"($cursor: String)", "($cursor: String" & cursor & ")"))
+                 
+                 ]
+    )),
+
+    data = Source[data],
+    allCards= data[allCards],
+    edges = allCards[edges],
+    pageInfo = allCards[pageInfo],
+    hasNextPage = pageInfo[hasNextPage],
+    endcursor = pageInfo[endCursor],
+    res = [Data=edges, Cursor=endcursor, HasNext=hasNextPage]
+
+  in
+    res,
+  generatedList = List.Generate(
+    ()=>[res = GetPage("")],
+		each [res][Cursor] <> null,
+		each [res = GetPage("=\""" & [res][Cursor] & "\""")],
+		each [res][Data] 
+  )
+in
+    generatedList
